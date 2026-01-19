@@ -49,7 +49,7 @@
       username = "maru";
     in
     {
-      nixosConfigurations.main = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.turing = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs username; };
         
@@ -62,7 +62,7 @@
           stylix.nixosModules.stylix
           
           # Host configuration
-          ./hosts/main
+          ./hosts/turing
           
           # Home Manager
           home-manager.nixosModules.home-manager

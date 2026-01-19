@@ -24,7 +24,7 @@ fi
 
 # Create directory structure
 echo "📁 Creating directory structure..."
-mkdir -p "$REPO_DIR"/{hosts/main,modules/{core,services,desktop,hardware},home/modules/{shell,terminal,desktop,editors},home/packages,secrets,lib}
+mkdir -p "$REPO_DIR"/{hosts/turing,modules/{core,services,desktop,hardware},home/modules/{shell,terminal,desktop,editors},home/packages,secrets,lib}
 
 cd "$REPO_DIR"
 
@@ -86,7 +86,7 @@ cat > flake.nix << 'FLAKE_EOF'
       username = "USERNAME_PLACEHOLDER";
     in
     {
-      nixosConfigurations.main = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.turing = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs username; };
         
@@ -97,7 +97,7 @@ cat > flake.nix << 'FLAKE_EOF'
           ragenix.nixosModules.default
           stylix.nixosModules.stylix
           
-          ./hosts/main
+          ./hosts/turing
           
           home-manager.nixosModules.home-manager
           {
@@ -162,7 +162,7 @@ echo "   - modules/core/users.nix (your name)"
 echo ""
 echo "3. Identify your secondary SSD:"
 echo "   lsblk"
-echo "   Then edit hosts/main/disko.nix and change the device path"
+echo "   Then edit hosts/turing/disko.nix and change the device path"
 echo ""
 echo "4. Commit your changes:"
 echo "   cd $REPO_DIR"

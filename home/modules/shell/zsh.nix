@@ -22,9 +22,9 @@
     # Aliases
     shellAliases = {
       # NixOS shortcuts
-      nrs = "sudo nixos-rebuild switch --flake ~/.dotfiles#main";
-      nrb = "sudo nixos-rebuild boot --flake ~/.dotfiles#main";
-      nrt = "sudo nixos-rebuild test --flake ~/.dotfiles#main";
+      nrs = "sudo nixos-rebuild switch --flake ~/.dotfiles#turing";
+      nrb = "sudo nixos-rebuild boot --flake ~/.dotfiles#turing";
+      nrt = "sudo nixos-rebuild test --flake ~/.dotfiles#turing";
       
       # Update flake
       update = "cd ~/.dotfiles && nix flake update && nrs";

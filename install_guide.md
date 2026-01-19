@@ -74,14 +74,14 @@ cd /mnt/etc/nixos
 
 ## Step 6: Update Configuration for Your Hardware
 
-### 6.1: Edit `hosts/main/disko.nix`
+### 6.1: Edit `hosts/turing/disko.nix`
 
 ```bash
 # Find your secondary SSD device
 lsblk
 
 # Edit disko.nix
-nano hosts/main/disko.nix
+nano hosts/turing/disko.nix
 ```
 
 Change this line:
@@ -128,10 +128,10 @@ Update your git configuration with your name and email.
 
 ```bash
 # This will WIPE your secondary SSD!
-# Double-check the device in hosts/main/disko.nix
+# Double-check the device in hosts/turing/disko.nix
 
 # Run disko to partition and format
-sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko /mnt/etc/nixos/hosts/main/disko.nix
+sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko /mnt/etc/nixos/hosts/turing/disko.nix
 
 # You'll be prompted for an encryption password - remember this!
 ```
@@ -143,14 +143,14 @@ sudo nix --experimental-features "nix-command flakes" run github:nix-community/d
 nixos-generate-config --no-filesystems --root /mnt
 
 # Move the hardware config to the right place
-sudo mv /mnt/etc/nixos/hardware-configuration.nix /mnt/etc/nixos/hosts/main/hardware.nix
+sudo mv /mnt/etc/nixos/hardware-configuration.nix /mnt/etc/nixos/hosts/turing/hardware.nix
 ```
 
 ## Step 9: Initial Installation
 
 ```bash
 # Install NixOS
-sudo nixos-install --root /mnt --flake /mnt/etc/nixos#main
+sudo nixos-install --root /mnt --flake /mnt/etc/nixos#turing
 
 # Set root password when prompted
 ```
@@ -182,7 +182,7 @@ mv /etc/nixos ~/.dotfiles
 cd ~/.dotfiles
 
 # The system is already installed, but let's verify
-sudo nixos-rebuild switch --flake ~/.dotfiles#main
+sudo nixos-rebuild switch --flake ~/.dotfiles#turing
 ```
 
 ## Step 11: Set Up Secrets (Optional but Recommended)
@@ -218,14 +218,14 @@ ragenix -e ~/.dotfiles/secrets/example_secret.age
 
 Now that everything is working, you can customize:
 
-1. **Wallpaper**: Download a wallpaper and update the URL in `hosts/main/default.nix`
+1. **Wallpaper**: Download a wallpaper and update the URL in `hosts/turing/default.nix`
 2. **Monitor configuration**: Edit `home/modules/desktop/hyprland.nix` monitor settings
 3. **Keybindings**: Adjust Hyprland keybindings to your preference
 4. **Applications**: Add more packages to `home/default.nix`
 
 After any changes:
 ```bash
-sudo nixos-rebuild switch --flake ~/.dotfiles#main
+sudo nixos-rebuild switch --flake ~/.dotfiles#turing
 ```
 
 ## Step 13: Create a Snapshot (For Rollbacks)
@@ -261,7 +261,7 @@ sudo bootctl set-default arch.conf
 
 For NVIDIA:
 ```bash
-# Add to hosts/main/default.nix
+# Add to hosts/turing/default.nix
 imports = [
   ../../modules/hardware/nvidia.nix
 ];
@@ -329,7 +329,7 @@ cd ~/.dotfiles
 nix flake update
 
 # Rebuild with new inputs
-sudo nixos-rebuild switch --flake ~/.dotfiles#main
+sudo nixos-rebuild switch --flake ~/.dotfiles#turing
 
 # Or use the alias (from zsh config)
 update

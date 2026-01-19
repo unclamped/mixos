@@ -19,7 +19,7 @@ A modular, reproducible NixOS configuration with Hyprland, impermanence, and ful
 .
 ├── flake.nix           # Main flake configuration
 ├── hosts/
-│   └── main/           # Host-specific config
+│   └── turing/         # Host-specific config
 │       ├── default.nix
 │       ├── disko.nix   # Disk layout
 │       └── hardware.nix
@@ -38,7 +38,7 @@ A modular, reproducible NixOS configuration with Hyprland, impermanence, and ful
 
 ```bash
 # Rebuild system
-sudo nixos-rebuild switch --flake ~/.dotfiles#main
+sudo nixos-rebuild switch --flake ~/.dotfiles#turing
 
 # Update flake inputs
 nix flake update
@@ -105,7 +105,7 @@ in
 }
 ```
 
-2. Import in `hosts/main/default.nix`:
+2. Import in `hosts/turing/default.nix`:
 
 ```nix
 imports = [
@@ -166,7 +166,7 @@ age.secrets.mysecret = {
 
 ## Theming
 
-Stylix automatically themes all applications based on the wallpaper defined in `hosts/main/default.nix`.
+Stylix automatically themes all applications based on the wallpaper defined in `hosts/turing/default.nix`.
 
 To change the theme:
 
@@ -218,7 +218,7 @@ ncdu /nix/store
 nix flake update
 
 # Check for issues
-nixos-rebuild dry-build --flake ~/.dotfiles#main
+nixos-rebuild dry-build --flake ~/.dotfiles#turing
 ```
 
 ## Customization Ideas
