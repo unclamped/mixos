@@ -1,0 +1,21 @@
+# Build outputs
+result
+result-*
+
+# Secrets - NEVER commit these
+secrets/*.txt
+secrets/*.key
+*.age.key
+
+# Hardware configuration (unique per machine)
+hosts/*/hardware.nix
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# direnv
+.direnv/
+.envrc
