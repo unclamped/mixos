@@ -21,5 +21,5 @@
   };
   
   # Disable PulseAudio (replaced by PipeWire)
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
 }

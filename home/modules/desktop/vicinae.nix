@@ -1,0 +1,26 @@
+{ config, pkgs, ... }:
+
+{
+  services.vicinae = {
+    enable = true;
+    systemd = {
+      enable = true;
+      autoStart = true;
+      environment = {
+        USE_LAYER_SHELL = 1;
+      };
+    };
+    settings = {
+      close_on_focus_loss = true;
+      consider_preedit = true;
+      pop_to_root_on_close = true;
+      search_files_in_root = true;
+      font = {
+        normal = {
+          size = 12;
+          family = "Maple Nerd Font";
+        };
+      };
+    };
+  };
+}

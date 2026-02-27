@@ -16,6 +16,7 @@
       
       input = {
         kb_layout = "us";
+        kb_variant = "altgr-intl";
         follow_mouse = 1;
         sensitivity = 0;
       };
@@ -42,9 +43,10 @@
         "$mod, Return, exec, kitty"
         "$mod, Q, killactive"
         "$mod, M, exit"
-        "$mod, E, exec, thunar"
+        "$mod, E, exec, dolphin"
         "$mod, V, togglefloating"
-        "$mod, R, exec, rofi -show drun"
+        "$mod, R, exec, vicinae toggle"
+        "$mod, L, exec, librewolf"
         
         "$mod, 1, workspace, 1"
         "$mod, 2, workspace, 2"

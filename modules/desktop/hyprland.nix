@@ -4,7 +4,7 @@
   # Hyprland window manager
   programs.hyprland = {
     enable = true;
-    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     xwayland.enable = true;
   };
   
@@ -21,7 +21,7 @@
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd Hyprland";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --sessions ${pkgs.hyprland}/share/wayland-sessions";
         user = "greeter";
       };
     };
@@ -49,7 +49,10 @@
     wl-clipboard
     
     # File manager
-    xfce.thunar
+    kdePackages.dolphin
+    kdePackages.kio
+    kdePackages.kio-fuse
+    kdePackages.kio-extras
     
     # Network applet
     networkmanagerapplet
@@ -58,5 +61,6 @@
     brightnessctl
     
     # Vicinae (will be installed via home-manager)
+    vicinae
   ];
 }

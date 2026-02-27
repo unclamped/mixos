@@ -39,9 +39,24 @@
     
     # Hyprland
     hyprland.url = "github:hyprwm/Hyprland";
+    
+    # External kernel (nix-cachyos) for linux-cachyos-bore-lto
+    nix-cachyos-kernel = {
+      url = "github:xddxdd/nix-cachyos-kernel";
+    };
+
+    # nixcord (alternative Discord client)
+    nixcord = {
+      url = "github:FlameFlag/nixcord";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Vicinae - application launcher
+    # Note: Do NOT add inputs.nixpkgs.follows to avoid cachix cache misses
+    vicinae.url = "github:vicinaehq/vicinae";
   };
 
-  outputs = { self, nixpkgs, home-manager, impermanence, disko, ragenix, stylix, hyprland, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, impermanence, disko, ragenix, stylix, hyprland, vicinae, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -54,6 +69,13 @@
         specialArgs = { inherit inputs username; };
         
         modules = [
+          # Add the cachyos kernel overlay so `pkgs.cachyosKernels` is available
+          ( { pkgs, ... }:
+            {
+              nixpkgs.overlays = [ (inputs."nix-cachyos-kernel").overlays.pinned ];
+            }
+          )
+
           # Core inputs
           # lix-module.nixosModules.default
           disko.nixosModules.disko

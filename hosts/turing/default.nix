@@ -19,6 +19,9 @@
 
     # ENVIDIA
     ../../modules/hardware/nvidia.nix
+
+    # for my Lemokey Keychron keeb
+    # ../../modules/hardware/qmk.nix
   ];
 
   # Fix Lix separateDebugInfo issue
@@ -40,9 +43,14 @@
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
+    substituters = [ "https://attic.xuyh0120.win/lantian" ];
+    "trusted-public-keys" = [ "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=" ];
   };
 
   nixpkgs.config.allowUnfree = true;
+
+  # Use the nix-cachyos kernel exposed by the overlay (preferred pinned overlay)
+  boot.kernelPackages = pkgs.lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto;
 
   # Stylix theming
   stylix = {
@@ -56,7 +64,7 @@
     };
     
     # Or use a base16 scheme directly
-    # base16Scheme = "${pkgs.base16-schemes}/share/themes/dracula.yaml";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark.yaml";
     
     polarity = "dark";
     
@@ -91,7 +99,6 @@
     };
   };
 
-  # Essential packages
   environment.systemPackages = with pkgs; [
     # System tools
     vim
@@ -111,6 +118,10 @@
     # BTRFS tools
     btrfs-progs
     compsize
+  
+
+    # Misc
+    variety
   ];
 
   # Enable CUPS for printing (optional)

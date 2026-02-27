@@ -44,9 +44,6 @@
       # CD shortcuts
       ".." = "cd ..";
       "..." = "cd ../..";
-      
-      # Trash instead of rm (safer)
-      rm = "trash";
     };
     
     # Init extra
@@ -124,7 +121,7 @@
     enable = true;
     enableZshIntegration = true;
     git = true;
-    icons = true;
+    icons = "auto";
   };
   
   # bat (better cat)

@@ -11,6 +11,7 @@
       "video"
       "audio"
       "input"
+      "realtime"
     ];
     
     # User's home will be on /persist
@@ -24,6 +25,9 @@
   
   # Enable zsh system-wide
   programs.zsh.enable = true;
+
+  # Ensure realtime limits for audio users
+  environment.etc."security/limits.d/audio.conf".text = ''@audio - rtprio 90'';
   
   # Persist user home directory
   environment.persistence."/persist" = {
@@ -55,6 +59,7 @@
   fileSystems."/home/${username}" = {
     device = "/persist/home/${username}";
     options = [ "bind" ];
+    neededForBoot = true;
     depends = [ "/persist" ];
   };
 }

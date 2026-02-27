@@ -82,7 +82,7 @@ cat > flake.nix << 'FLAKE_EOF'
   outputs = { self, nixpkgs, lix-module, home-manager, impermanence, disko, ragenix, stylix, hyprland, ... }@inputs:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = nixpkgs.legacyPackages.${stdenv.hostPlatform.system};
       username = "USERNAME_PLACEHOLDER";
     in
     {
@@ -111,10 +111,10 @@ cat > flake.nix << 'FLAKE_EOF'
         ];
       };
       
-      devShells.${system}.default = pkgs.mkShell {
+      devShells.${stdenv.hostPlatform.system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           age
-          ragenix.packages.${system}.default
+          ragenix.packages.${stdenv.hostPlatform.system}.default
           nixpkgs-fmt
         ];
       };
