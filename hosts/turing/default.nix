@@ -20,6 +20,7 @@
     ../../modules/desktop/hyprlain-session.nix
     ../../modules/desktop/sddm-hyprlain.nix
     ../../modules/desktop/helium-policy.nix
+    ../../modules/desktop/plymouth-lain.nix
 
     # ENVIDIA
     ../../modules/hardware/nvidia.nix

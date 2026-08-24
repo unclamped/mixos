@@ -65,10 +65,8 @@
       "video=DP-1:1024x768@75"
     ];
     
-    # Plymouth boot splash — Lain-themed via Stylix's (well-tested) plymouth
-    # target, which correctly renders the LUKS passphrase prompt on this
-    # encrypted system. We only swap in a Serial Experiments Lain logo (see the
-    # stylix.targets.plymouth.logo override below).
+    # Plymouth boot splash — Lain-themed via modules/desktop/plymouth-lain.nix
+    # (static logo, TV-static animation during the LUKS passphrase prompt).
     plymouth = {
       enable = true;
     };
@@ -82,9 +80,4 @@
     initrd.systemd.enable = true;
     initrd.systemd.emergencyAccess = true;
   };
-
-  # Swap the Plymouth logo for a Serial Experiments Lain image while keeping
-  # Stylix's tested plymouth theme (LUKS passphrase prompt intact).
-  stylix.targets.plymouth.logo =
-    "${inputs.hyprlain-src}/src/hyprland/src/assets/media/imgs/lainsmall2.png";
 }

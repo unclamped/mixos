@@ -7,6 +7,18 @@
     file = ../../secrets/maru-password.age;
   };
 
+  # SSH private key, decrypted straight to ~/.ssh on every boot instead of
+  # riding along in plaintext inside the generic .ssh persistence bind-mount
+  # (see the files = [...] list below: everything else in .ssh is still
+  # plainly persisted since it isn't sensitive).
+  age.secrets.ssh-id-ed25519 = {
+    file = ../../secrets/ssh-id-ed25519.age;
+    path = "/home/${username}/.ssh/id_ed25519";
+    owner = username;
+    group = "users";
+    mode = "0600";
+  };
+
   # Define user account
   users.users.${username} = {
     isNormalUser = true;
@@ -48,18 +60,25 @@
         "Pictures"
         "Videos"
         "Projects"
-        ".ssh"
         ".local/share"
         ".cache"
         ".config"
-        
+
         # Development
         ".cargo"
         ".rustup"
-        
+
         # Other persistent dirs you might want
         # ".mozilla"
         # ".thunderbird"
+      ];
+
+      # .ssh/id_ed25519 (the private key) comes from the age secret above
+      # instead of being persisted here in plaintext.
+      files = [
+        ".ssh/id_ed25519.pub"
+        ".ssh/known_hosts"
+        ".ssh/config"
       ];
     };
   };

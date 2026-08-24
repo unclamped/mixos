@@ -38,8 +38,4 @@
     initrd.systemd.emergencyAccess = true;
   };
 
-  # Same Lain plymouth logo as turing, over Stylix's tested plymouth theme
-  # (correctly renders the LUKS passphrase prompt on an encrypted system).
-  stylix.targets.plymouth.logo =
-    "${inputs.hyprlain-src}/src/hyprland/src/assets/media/imgs/lainsmall2.png";
 }

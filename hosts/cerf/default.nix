@@ -19,6 +19,7 @@
     ../../modules/desktop/hyprlain-session.nix
     ../../modules/desktop/sddm-hyprlain.nix
     ../../modules/desktop/helium-policy.nix
+    ../../modules/desktop/plymouth-lain.nix
 
     # FIDO2 / U2F hardware tokens — useful on a security-focused machine
     ../../modules/hardware/fido2.nix

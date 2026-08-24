@@ -224,10 +224,13 @@ in
           follow_mouse = 1,
           touchpad = { disable_while_typing = false, middle_button_emulation = true, tap_to_click = true, natural_scroll = true },
         },
-        gestures = {
-          workspace_swipe = true,
-        },
         animations = { enabled = true },
+      })
+
+      hl.gesture({
+        fingers = 3,
+        direction = "horizontal",
+        action = "workspace",
       })
 
       --------------------- ANIMATIONS ---------------------

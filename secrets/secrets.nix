@@ -3,4 +3,5 @@ let
 in
 {
   "maru-password.age".publicKeys = [ maru ];
+  "ssh-id-ed25519.age".publicKeys = [ maru ];
 }
