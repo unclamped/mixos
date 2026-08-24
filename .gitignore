@@ -1,0 +1,23 @@
+.claude/
+
+# IDA Pro installation and binaries — stored locally, never committed
+ida/
+
+# Build outputs
+result
+result-*
+
+# Secrets - NEVER commit these
+secrets/*.txt
+secrets/*.key
+*.age.key
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# direnv
+.direnv/
+.envrc

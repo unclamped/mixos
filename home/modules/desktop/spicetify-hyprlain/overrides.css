@@ -1,0 +1,17 @@
+/* ===================================================================
+   mixos overrides on top of the upstream Hyprlain spicetify theme.
+   Appended to user.css; later rules win, so these patch layout/selector
+   drift against the current Spotify (1.2.90) without editing upstream.
+   =================================================================== */
+
+/* The `spotify_cli` ASCII banner is a ::before on `.view-homeShortcutsGrid-
+   shortcuts`, which is a CSS *grid*. A pseudo-element in a grid becomes a
+   grid ITEM, so the banner landed in a single top-left cell and its wide
+   (text-wrap:nowrap) art overflowed sideways across the neighbouring
+   quick-pick cards — the overlap in the screenshot. Make it span the whole
+   first row so the cards flow underneath it. */
+.view-homeShortcutsGrid-shortcuts::before {
+  grid-column: 1 / -1 !important;
+  justify-self: start !important;
+  overflow: visible !important;
+}

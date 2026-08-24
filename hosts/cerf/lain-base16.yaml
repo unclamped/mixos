@@ -1,0 +1,25 @@
+system: "base16"
+name: "Lain Wired"
+author: "mixos (derived from the Hyprlain / Serial Experiments Lain palette)"
+variant: "dark"
+# Lain palette: pure-black bg, dark-tan text, #CE7688 pink accent.
+# base08/0D/0E carry the pink accent so UI selections, links and function
+# syntax read as Lain pink; strings/cyan get a muted olive/teal so code stays
+# legible instead of monochrome-pink.
+palette:
+  base00: "#000000" # default background
+  base01: "#1a1a1a" # lighter bg (status bars, line highlight)
+  base02: "#2a2a2a" # selection background
+  base03: "#968c6e" # comments, muted / dim tan
+  base04: "#ba6a7b" # dark foreground
+  base05: "#c1b48e" # default foreground (Lain tan)
+  base06: "#d8cba6" # light foreground
+  base07: "#e8dfc0" # lightest foreground
+  base08: "#ce7688" # red / errors -> Lain pink
+  base09: "#a05969" # orange / constants -> deep rose
+  base0A: "#c1b48e" # yellow / classes -> tan
+  base0B: "#a8a06e" # green / strings -> muted olive
+  base0C: "#8c9e9e" # cyan / support -> muted teal
+  base0D: "#ce7688" # blue / functions / primary accent -> Lain pink
+  base0E: "#ba6a7b" # magenta / keywords -> rose
+  base0F: "#a05969" # brown / deprecated -> deep rose

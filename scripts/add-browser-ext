@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# add-browser-ext — generate a Nix policy snippet for a Firefox/Librewolf extension
+#
+# Usage:
+#   scripts/add-browser-ext <addons.mozilla.org addon URL>
+#
+# Example:
+#   scripts/add-browser-ext https://addons.mozilla.org/en-US/firefox/addon/privacy-badger/
+#
+# The output snippet goes into programs.librewolf.policies.ExtensionSettings
+# in home/modules/browsers/librewolf.nix.
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: $0 <addons.mozilla.org addon URL>" >&2
+  exit 1
+fi
+
+URL="$1"
+
+# Extract slug — strips locale prefix, query strings, fragments, and trailing slash
+SLUG=$(sed -E 's|.*/addon/([^/?#]+).*|\1|' <<< "$URL")
+
+if [[ "$SLUG" == "$URL" ]]; then
+  echo "error: could not extract addon slug from: $URL" >&2
+  exit 1
+fi
+
+echo "fetching: $SLUG" >&2
+
+RESPONSE=$(curl -sf "https://addons.mozilla.org/api/v5/addons/addon/${SLUG}/") || {
+  echo "error: addon '$SLUG' not found on addons.mozilla.org" >&2
+  exit 1
+}
+
+if command -v jq &>/dev/null; then
+  GUID=$(jq -r '.guid' <<< "$RESPONSE")
+  NAME=$(jq -r '.name["en-US"]' <<< "$RESPONSE")
+else
+  GUID=$(grep -oP '"guid":"\K[^"]+' <<< "$RESPONSE")
+  # The API response has a license "name" object before the extension "name" object;
+  # take the last match, then pull en-US out of it.
+  NAME=$(grep -oP '"name":\{[^}]+\}' <<< "$RESPONSE" | tail -1 | grep -oP '"en-US":"\K[^"]+')
+  NAME=${NAME:-$SLUG}
+fi
+
+if [[ -z "$GUID" || "$GUID" == "null" ]]; then
+  echo "error: could not parse GUID from API response" >&2
+  exit 1
+fi
+
+INSTALL_URL="https://addons.mozilla.org/firefox/downloads/latest/${SLUG}/latest.xpi"
+
+cat >&2 <<INFO
+name : $NAME
+guid : $GUID
+slug : $SLUG
+INFO
+
+echo "" >&2
+echo "Paste into programs.librewolf.policies.ExtensionSettings in home/modules/browsers/librewolf.nix:" >&2
+
+cat <<SNIPPET
+
+      # ${NAME}
+      "${GUID}" = {
+        install_url = "${INSTALL_URL}";
+        installation_mode = "force_installed";
+      };
+SNIPPET

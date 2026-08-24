@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "version": "1.0",
+  "name": "Lain Wired",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAze53SUA1dD23U3q2FcOm4w/Fut5jjVfUionCIslrRUbW93tTu3P4qN0F+djZ6F67STs4MpqmIugt1Nw1rn+NWzMRiZpbJW4mLRL6JFZcplpnqUd2813CkY0qUfsQsy+xqKdxY4oupvgB14NgTBKS0XkXVgcX7E5sOfSiXKcjijWoJSvPsZ2VsCLuQ+xXDWUpyDYxKA1l4MKuFfIPtgy/ROpDfPDQkSSyUgLQdK8uA/WMY5CVSs0SkQXt9omSnWBUD72E4siGiE2711otld8CjsOfvL5K+2LzjB7gzZXre+iGldMbXctZXsQX7/o7JobgjPZo1ul9ptDZxKxwE1jRoQIDAQAB",
+  "description": "Serial Experiments Lain palette for the Helium/Chromium UI — pure-black chrome, tan text, pink accents.",
+  "theme": {
+    "colors": {
+      "frame": [0, 0, 0],
+      "frame_inactive": [10, 10, 10],
+      "frame_incognito": [10, 10, 10],
+      "frame_incognito_inactive": [0, 0, 0],
+      "toolbar": [10, 10, 10],
+      "tab_text": [206, 118, 136],
+      "tab_background_text": [150, 140, 110],
+      "tab_background_text_inactive": [90, 83, 65],
+      "bookmark_text": [193, 180, 142],
+      "toolbar_text": [193, 180, 142],
+      "toolbar_button_icon": [206, 118, 136],
+      "omnibox_background": [0, 0, 0],
+      "omnibox_text": [193, 180, 142],
+      "ntp_background": [0, 0, 0],
+      "ntp_text": [193, 180, 142],
+      "ntp_link": [206, 118, 136],
+      "button_background": [10, 10, 10]
+    },
+    "tints": {
+      "buttons": [-1, -1, 0.75]
+    },
+    "properties": {
+      "ntp_logo_alternate": 1
+    }
+  }
+}
