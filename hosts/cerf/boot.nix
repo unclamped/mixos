@@ -5,11 +5,18 @@
   # Boot Manager (mounted, never formatted — see fileSystems."/boot" in
   # default.nix). systemd-boot auto-detects bootmgfw.efi on a shared ESP with
   # no extra config, so Windows keeps showing up in the boot menu.
+  #
+  # The ESP is only 100M and the disk is fully partitioned edge-to-edge (no
+  # free space to grow it — confirmed via `lsblk`: ESP -> MSR -> Windows C:
+  # -> Windows recovery -> LUKS, back to back). A single NixOS generation's
+  # kernel+initrd is already ~35M, and Windows's own files take ~27M, so
+  # even configurationLimit = 2 doesn't reliably fit (this is what caused
+  # bootloader installs to fail with ENOSPC). Keep only 1 generation.
   boot = {
     loader = {
       systemd-boot = {
         enable = true;
-        configurationLimit = 10;
+        configurationLimit = 1;
         editor = false; # disable editor for security
       };
 

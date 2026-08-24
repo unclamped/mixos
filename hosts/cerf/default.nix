@@ -68,6 +68,27 @@
   # Dolphin: removable media / automount support
   services.udisks2.enable = true;
 
+  # The built-in Synaptics touchpad (TM2768-001) runs over SMBus/RMI4
+  # (upstream deliberately enabled this for the EliteBook 840 G2 — it gives
+  # smoother movement and proper 3-finger gestures vs. plain PS/2). That
+  # path has a known kernel resume bug though: after any suspend/resume the
+  # touchpad goes dead and stays dead (confirmed via `journalctl -k`:
+  # "Failed to read current IRQ mask", "Resume failed with code -6",
+  # repeating on every subsequent suspend attempt too). Re-probing the
+  # SMBus driver binding for the device (i2c-0/0-002c, per
+  # /proc/bus/input/devices) after resume recovers it without giving up
+  # SMBus mode.
+  powerManagement.resumeCommands = ''
+    dev="0-002c"
+    driver="/sys/bus/i2c/drivers/rmi4_smbus"
+    if [ -e "$driver/$dev" ]; then
+      sleep 1
+      echo -n "$dev" > "$driver/unbind" || true
+      sleep 0.5
+      echo -n "$dev" > "$driver/bind" || true
+    fi
+  '';
+
   security.polkit.enable = true;
 
   qt = {
