@@ -20,31 +20,31 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     # Impermanence
     impermanence.url = "github:nix-community/impermanence";
-    
+
     # Disko for declarative partitioning
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     # Secrets with ragenix
     ragenix = {
       url = "github:yaxitech/ragenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     # Stylix for theming
     stylix = {
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
     # Hyprland
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
-    
+
     # External kernel (nix-cachyos) for linux-cachyos-bore-lto
     nix-cachyos-kernel = {
       url = "github:xddxdd/nix-cachyos-kernel";
@@ -132,10 +132,10 @@
       nixosConfigurations.turing = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs username; };
-        
+
         modules = [
           # Add the cachyos kernel overlay so `pkgs.cachyosKernels` is available
-          ( { pkgs, ... }:
+          ({ pkgs, ... }:
             {
               nixpkgs.overlays = [ (inputs."nix-cachyos-kernel").overlays.pinned rust-overlay.overlays.default ];
               environment.systemPackages = [ pkgs.rust-bin.stable.latest.default ];
@@ -145,7 +145,7 @@
           # IDA Pro — adds pkgs.ida-pro from the local package.
           # ida-src is a path: flake input pointing to the gitignored ida/
           # directory; Nix hashes it into flake.lock so pure eval mode is happy.
-          ( { ... }:
+          ({ ... }:
             {
               nixpkgs.overlays = [
                 (self: super: {
@@ -163,10 +163,10 @@
           impermanence.nixosModules.impermanence
           ragenix.nixosModules.default
           stylix.nixosModules.stylix
-          
+
           # Host configuration
           ./hosts/turing
-          
+
           # Home Manager
           home-manager.nixosModules.home-manager
           {
@@ -184,22 +184,21 @@
           }
         ];
       };
-      
+
       nixosConfigurations.cerf = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs username; };
 
         modules = [
           # Core inputs
-          # NOTE: deliberately NOT using lix-module here (unlike turing) — that
-          # flake pins Lix to a rolling `main` branch commit, which
-          # cache.lix.systems doesn't serve (it only caches tagged releases),
-          # so it would compile from source: a multi-hour, OOM-prone build on
-          # this laptop's dual-core CPU / 16G RAM. Instead cerf gets Lix from
-          # nixpkgs itself (pkgs.lix, set via nix.package in hosts/cerf,
-          # currently 2.95.2 at this flake.lock's pinned nixpkgs commit) —
-          # Hydra-built and cache.nixos.org-cached like everything else, and
-          # compatible with this nixpkgs revision by construction.
+          # cerf now uses the same rolling-main lix-module as turing. This
+          # used to be avoided here (cache.lix.systems only serves tagged
+          # releases, so a `main` pin would compile from source — a
+          # multi-hour, OOM-prone build on this laptop's dual-core CPU /
+          # 16G RAM). The afnix-hydra cache (see nix.settings.substituters
+          # in hosts/cerf and hosts/turing) now warms builds of Lix `main`,
+          # so both machines can track it without compiling from source.
+          lix-module.nixosModules.default
           disko.nixosModules.disko
           impermanence.nixosModules.impermanence
           ragenix.nixosModules.default

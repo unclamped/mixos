@@ -41,19 +41,16 @@
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
-    substituters = [ "https://hyprland.cachix.org" "https://attic.xuyh0120.win/lantian" ];
+    substituters = [ "https://hyprland.cachix.org" "https://attic.xuyh0120.win/lantian" "https://afnix-hydra.s3-bulk-web.afnix.fr/" ];
     trusted-public-keys = [
       "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+      "afnix:oqt801y+IwJ09XRtNDQYCKb7zuCw9DQXQk8fDWPkwxM="
     ];
   };
 
   nixpkgs.config.allowUnfree = true;
   nixpkgs.flake.setFlakeRegistry = true;
-
-  # Lix, from nixpkgs itself rather than the git.lix.systems flake (see the
-  # comment in flake.nix) — Hydra-built and cached, no from-source compile.
-  nix.package = pkgs.lix;
 
   # The existing Windows ESP, mounted (never formatted) at /boot. Windows
   # Boot Manager lives here; systemd-boot auto-detects and lists it.
