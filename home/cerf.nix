@@ -119,6 +119,19 @@
     };
   };
 
+  # Force kitty onto Xwayland/GLX instead of native Wayland. On this
+  # Broadwell iGPU, the current Mesa (26.2) fails Wayland-EGL config
+  # negotiation for kitty/GLFW's desktop-GL context request — "EGL: No
+  # EGLConfigs returned" — even though Hyprland's own GLES context (via
+  # aquamarine) and Xwayland/GLX both work fine. Verified directly on cerf:
+  # `kitty -o linux_display_server=wayland` fails with "Failed to create
+  # GLFWwindow... kitty requires working OpenGL 3.1 drivers" regardless of
+  # background_opacity; `-o linux_display_server=x11` reports GL 4.6 Core
+  # Profile Mesa 26.2.1 and launches normally. turing doesn't hit this (its
+  # NVIDIA driver's Wayland-EGL path isn't affected), so this override is
+  # cerf-only rather than a change to the shared kitty module.
+  programs.kitty.settings.linux_display_server = "x11";
+
   # Same key as turing's home/default.nix — see the comment there. Must
   # match the key authorized below in this host's services.openssh config.
   home.file.".ssh/id_ed25519.pub".text =
