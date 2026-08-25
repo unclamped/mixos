@@ -118,4 +118,12 @@
       pull.rebase = false;
     };
   };
+
+  # Same key as turing's home/default.nix — see the comment there. Must
+  # match the key authorized below in this host's services.openssh config.
+  home.file.".ssh/id_ed25519.pub".text =
+    let
+      email = lib.concatStrings (lib.reverseList (lib.stringToCharacters "moc.atonatut@0686raelc"));
+    in
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDiPiksIGtarfrN0IPEOlOBIpi4qX+M1J/DWPoxexviq ${email}\n";
 }

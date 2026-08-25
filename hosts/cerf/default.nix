@@ -43,6 +43,23 @@
   # Console keymap
   console.keyMap = "us";
 
+  # SSH server — key-only, maru only. Accepts the same id_ed25519 keypair
+  # used to reach cerf from turing (home/cerf.nix's home.file declares the
+  # public half here; the private half on the connecting end is the
+  # ragenix-managed secret in modules/core/users.nix).
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+      AllowUsers = [ username ];
+    };
+  };
+
+
+  networking.firewall.allowedTCPPorts = [ 22 ];
+
   # Enable flakes
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
@@ -156,7 +173,15 @@
   # Wireshark: capture without running as root (adds maru to the wireshark
   # group and sets dumpcap's capabilities instead of setuid-root).
   programs.wireshark.enable = true;
-  users.users.${username}.extraGroups = [ "wireshark" ];
+  users.users.${username} = {
+    extraGroups = [ "wireshark" ];
+
+    # No comment field needed here — it's not used for auth, so there's
+    # nothing to reverse-obfuscate like the copies in home/default.nix.
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDiPiksIGtarfrN0IPEOlOBIpi4qX+M1J/DWPoxexviq"
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
     # System tools

@@ -482,4 +482,18 @@
       pull.rebase = false;
     };
   };
+
+  # The shared id_ed25519 keypair's public half — non-secret, so declared
+  # here instead of relying on it being manually copied between hosts (it
+  # wasn't: cerf never had it). The private half is ragenix-managed, see
+  # modules/core/users.nix's ssh-id-ed25519 secret. Must match the key
+  # authorized in hosts/cerf/default.nix's services.openssh config.
+  #
+  # The comment field (an email) is stored reversed, same as the git email
+  # above, so it doesn't sit in cleartext in the repo.
+  home.file.".ssh/id_ed25519.pub".text =
+    let
+      email = lib.concatStrings (lib.reverseList (lib.stringToCharacters "moc.atonatut@0686raelc"));
+    in
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDiPiksIGtarfrN0IPEOlOBIpi4qX+M1J/DWPoxexviq ${email}\n";
 }
