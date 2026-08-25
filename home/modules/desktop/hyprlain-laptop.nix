@@ -361,6 +361,13 @@ in
       tab_bar_align    center
       confirm_os_window_close 0
 
+      # kitty/GLFW fails "EGL: No EGLConfigs returned" over native
+      # Wayland-EGL on cerf's Broadwell iGPU (see home/cerf.nix's
+      # programs.kitty.settings override for the full explanation). This
+      # `-c` config is a separate file from that one, so it needs the same
+      # override repeated here.
+      linux_display_server x11
+
       ${kittyColors}
     '';
 
