@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, username, ... }:
+{ config, pkgs, inputs, username, lib, ... }:
 
 {
   imports = [
@@ -24,6 +24,9 @@
     # FIDO2 / U2F hardware tokens — useful on a security-focused machine
     ../../modules/hardware/fido2.nix
   ];
+
+  # Override the efiSysMountPoint specifically for this host's XBOOTLDR setup
+  boot.loader.efi.efiSysMountPoint = lib.mkForce "/boot/efi";
 
   # Hostname
   networking.hostName = "cerf";
@@ -52,12 +55,20 @@
   nixpkgs.config.allowUnfree = true;
   nixpkgs.flake.setFlakeRegistry = true;
 
-  # The existing Windows ESP, mounted (never formatted) at /boot. Windows
-  # Boot Manager lives here; systemd-boot auto-detects and lists it.
-  # Confirmed via blkid on the real hardware — this is the FAT32 filesystem
-  # UUID, not a partlabel (Windows didn't set the "System" partlabel here).
+  # Lix, from nixpkgs itself rather than the git.lix.systems flake (see the
+  # comment in flake.nix) — Hydra-built and cached, no from-source compile.
+  nix.package = pkgs.lix;
+
+  # sda1 (The main ESP with Windows and systemd-boot)
+  fileSystems."/boot/efi" = {
+      device = "/dev/disk/by-uuid/A84C-A32B";
+    fsType = "vfat";
+    options = [ "umask=0077" ];
+  };
+
+  # sda5 (The XBOOTLDR partition exclusively for NixOS kernels)
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/A84C-A32B";
+    device = "/dev/disk/by-uuid/E5A8-49A9";
     fsType = "vfat";
     options = [ "umask=0077" ];
   };

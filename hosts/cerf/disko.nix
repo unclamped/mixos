@@ -17,7 +17,7 @@
         # Confirmed on the real hardware via lsblk: parted assigned this as
         # partition 5, not 4 (there was presumably a pre-existing partition
         # 4, e.g. a recovery partition, ahead of the trailing free space).
-        device = "/dev/sda5";
+        device = "/dev/disk/by-partuuid/4db19d53-3692-42c0-a0b0-cbf51a303c2f";
 
         content = {
           type = "luks";
