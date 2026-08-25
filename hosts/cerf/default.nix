@@ -23,6 +23,9 @@
 
     # FIDO2 / U2F hardware tokens — useful on a security-focused machine
     ../../modules/hardware/fido2.nix
+
+    # Battery-life tuning (TLP, thermald, zram) — laptop only, not on turing
+    ../../modules/hardware/power-saving.nix
   ];
 
   # Override the efiSysMountPoint specifically for this host's XBOOTLDR setup
