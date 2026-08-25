@@ -2,7 +2,7 @@
   description = "Modular NixOS configuration with Hyprland";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.zst";
 
     # Lix - better Nix implementation
     lix = {
