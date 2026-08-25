@@ -23,10 +23,16 @@
       PCIE_ASPM_ON_AC = "default";
       PCIE_ASPM_ON_BAT = "powersupersave";
 
-      # Let PCI(e) devices (SATA controller, GPU, etc.) autosuspend when
-      # idle on battery.
+      # Let PCI(e) devices (SATA controller, etc.) autosuspend when idle on
+      # battery. The GPU is deliberately excluded below — this Broadwell
+      # i915 has known runtime-PM bugs where PCI-level autosuspend leaves
+      # the device stuck in a low-power state, breaking DRI/EGL context
+      # creation (e.g. kitty's "Failed to create GLFWwindow") until reboot.
+      # i915 already manages its own power states internally (RC6), so
+      # this doesn't give up any real savings.
       RUNTIME_PM_ON_AC = "on";
       RUNTIME_PM_ON_BAT = "auto";
+      RUNTIME_PM_DRIVER_BLACKLIST = "mei_me i915";
 
       USB_AUTOSUSPEND = 1;
 

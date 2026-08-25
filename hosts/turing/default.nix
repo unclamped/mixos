@@ -53,11 +53,10 @@
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
     auto-optimise-store = true;
-    substituters = [ "https://hyprland.cachix.org" "https://attic.xuyh0120.win/lantian" "https://afnix-hydra.s3-bulk-web.afnix.fr/" ];
+    substituters = [ "https://hyprland.cachix.org" "https://attic.xuyh0120.win/lantian" ];
     trusted-public-keys = [
       "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
-      "afnix:oqt801y+IwJ09XRtNDQYCKb7zuCw9DQXQk8fDWPkwxM="
     ];
   };
 
@@ -67,6 +66,10 @@
   # TODO: vesktop-1.6.5 pulls pnpm-10.29.2 (insecure); check if a newer vesktop
   # release fixes this before removing the allowance.
   nixpkgs.config.permittedInsecurePackages = [ "pnpm-10.29.2" ];
+
+  # Lix, from nixpkgs itself — Hydra-built and cache.nixos.org-cached, no
+  # separate flake input/module or third-party cache server needed.
+  nix.package = pkgs.lix;
 
   # Use the nix-cachyos kernel exposed by the overlay (preferred pinned overlay)
   boot.kernelPackages = pkgs.lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-bore-lto-x86_64-v3;

@@ -4,17 +4,6 @@
   inputs = {
     nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.zst";
 
-    # Lix - better Nix implementation
-    lix = {
-      url = "git+https://git.lix.systems/lix-project/lix";
-      flake = false;
-    };
-    lix-module = {
-      url = "git+https://git.lix.systems/lix-project/nixos-module";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.lix.follows = "lix";
-    };
-
     # Home Manager
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -121,7 +110,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, impermanence, disko, ragenix, stylix, hyprland, vicinae, lix-module, rust-overlay, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, impermanence, disko, ragenix, stylix, hyprland, vicinae, rust-overlay, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
@@ -158,7 +147,6 @@
           )
 
           # Core inputs
-          lix-module.nixosModules.default
           disko.nixosModules.disko
           impermanence.nixosModules.impermanence
           ragenix.nixosModules.default
@@ -191,14 +179,6 @@
 
         modules = [
           # Core inputs
-          # cerf now uses the same rolling-main lix-module as turing. This
-          # used to be avoided here (cache.lix.systems only serves tagged
-          # releases, so a `main` pin would compile from source — a
-          # multi-hour, OOM-prone build on this laptop's dual-core CPU /
-          # 16G RAM). The afnix-hydra cache (see nix.settings.substituters
-          # in hosts/cerf and hosts/turing) now warms builds of Lix `main`,
-          # so both machines can track it without compiling from source.
-          lix-module.nixosModules.default
           disko.nixosModules.disko
           impermanence.nixosModules.impermanence
           ragenix.nixosModules.default
