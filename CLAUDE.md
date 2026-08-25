@@ -77,9 +77,9 @@ Root (`/`) is wiped to a blank BTRFS snapshot on every boot via an initrd system
 - `/nix` — the nix store
 - `/persist` — explicitly opt-in persistent state
 
-The user's home (`/home/maru`) is bind-mounted from `/persist/home/maru`. Directories like `~/.config`, `~/.local/share`, `~/.cache`, `.ssh`, and `Projects` are listed in `modules/core/users.nix` under `environment.persistence."/persist".users.maru.directories` — anything not listed there is lost on reboot.
+The user's home (`/home/maru`) is bind-mounted **wholesale** from `/persist/home/maru` via a `fileSystems."/home/maru"` entry in `modules/core/users.nix` — everything under `/home/maru` survives reboots unconditionally, with no per-directory/per-file opt-in needed. Do **not** add entries for paths under `/home/maru` to `environment.persistence."/persist".users.maru.{directories,files}` — that pattern conflicts with the wholesale bind mount (the target file/dir already exists by the time the persistence unit runs, so it refuses to clobber it and the switch fails). System-level (non-home) paths like `/etc/machine-id` or `/var/lib/docker` still use the normal `environment.persistence."/persist".directories`/`.files` opt-in lists — see `modules/core/impermanence.nix`.
 
-**When adding new apps that need persistent state**, add their config/data directories to that list in `modules/core/users.nix`.
+**When adding new apps that need persistent state**, no action is needed if their config lives under `~/.config`, `~/.local/share`, etc. — it already persists via the home bind mount. Only system-level state outside `/home/maru` needs an explicit entry.
 
 ### Theming
 

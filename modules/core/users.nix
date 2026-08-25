@@ -8,9 +8,10 @@
   };
 
   # SSH private key, decrypted straight to ~/.ssh on every boot instead of
-  # riding along in plaintext inside the generic .ssh persistence bind-mount
-  # (see the files = [...] list below: everything else in .ssh is still
-  # plainly persisted since it isn't sensitive).
+  # riding along in plaintext. Everything else in ~/.ssh persists plainly
+  # since it isn't sensitive — the whole home directory is bind-mounted from
+  # /persist/home/${username} below, so no per-file persistence entry is
+  # needed for it.
   age.secrets.ssh-id-ed25519 = {
     file = ../../secrets/ssh-id-ed25519.age;
     path = "/home/${username}/.ssh/id_ed25519";
@@ -50,39 +51,18 @@
   # Ensure realtime limits for audio users
   environment.etc."security/limits.d/audio.conf".text = ''@audio - rtprio 90'';
   
-  # Persist user home directory
-  environment.persistence."/persist" = {
-    users.${username} = {
-      directories = [
-        "Documents"
-        "Downloads"
-        "Music"
-        "Pictures"
-        "Videos"
-        "Projects"
-        ".local/share"
-        ".cache"
-        ".config"
+  # NOTE: there is deliberately no environment.persistence."/persist".users
+  # block here. The fileSystems entry below bind-mounts the ENTIRE home
+  # directory from /persist/home/${username}, so everything under
+  # /home/${username} already survives reboots unconditionally — adding
+  # per-directory/per-file impermanence entries on top of that is not just
+  # redundant, it actively breaks activation: the persistence-mount-file
+  # unit for something like .ssh/config always finds a real (non-mount) file
+  # already sitting there (because the parent bind mount put it there first)
+  # and refuses to clobber it, failing the switch. If you want to exclude
+  # something under home from persistence, that has to be done by NOT
+  # storing it under /persist/home/${username}, not by fighting this mount.
 
-        # Development
-        ".cargo"
-        ".rustup"
-
-        # Other persistent dirs you might want
-        # ".mozilla"
-        # ".thunderbird"
-      ];
-
-      # .ssh/id_ed25519 (the private key) comes from the age secret above
-      # instead of being persisted here in plaintext.
-      files = [
-        ".ssh/id_ed25519.pub"
-        ".ssh/known_hosts"
-        ".ssh/config"
-      ];
-    };
-  };
-  
   # Link home to /persist/home
   fileSystems."/home/${username}" = {
     device = "/persist/home/${username}";
