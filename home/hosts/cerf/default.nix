@@ -37,19 +37,9 @@
     ida-pro
   ];
 
-  # Native Wayland for kitty, deliberately.
-  #
-  # This used to be forced to "x11" because kitty died on this machine with
-  # "EGL: No EGLConfigs returned ... kitty requires working OpenGL 3.1
-  # drivers". That was never a driver problem: Mesa on this Broadwell iGPU
-  # reports OpenGL 4.6 core on the Wayland EGL platform quite happily. The
-  # real cause and the fix live in
-  # modules/hardware/intel-gen8-kitty.nix — read that before changing this.
-  #
-  # If kitty ever fails to open again, flip this back to "x11" (that path
-  # still works) and check `kitty -o linux_display_server=wayland --detach`
-  # from a TTY for the EGL error.
-  programs.kitty.settings.linux_display_server = lib.mkForce "wayland";
+  # Keep kitty on Xwayland on this machine. Native Wayland here loses terminal
+  # transparency, while this workaround keeps transparent backgrounds working.
+  programs.kitty.settings.linux_display_server = lib.mkForce "x11";
 
   # Discord: a deliberately small plugin set. This is a 2-core Broadwell with
   # 15G of RAM that spends its day on battery in a lecture hall — turing's
