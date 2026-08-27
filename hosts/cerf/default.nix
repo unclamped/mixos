@@ -276,6 +276,7 @@
     unzip
     tree
     file
+    ferdium
   ];
 
   # This value determines the NixOS release from which the default

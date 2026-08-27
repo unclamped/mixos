@@ -39,6 +39,7 @@
 
     # Apps
     ./modules/apps/nixcord.nix            # Discord / Equibop, Lain-themed
+    ./modules/apps/zoom.nix               # Isolated web-client Zoom, see the file for why
 
     # Vicinae Home Manager module
     inputs.vicinae.homeManagerModules.default
