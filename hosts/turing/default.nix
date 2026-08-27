@@ -189,6 +189,14 @@
     zulip
     fluffychat
 
+    # Cisco's own network simulator, used throughout CCNAv7 courseware. The
+    # installer is gated behind a NetAcad login, so nixpkgs can't fetch it —
+    # `requireFile` means the build will stop and tell you to download
+    # CiscoPacketTracer_900_Ubuntu_64bit.deb from
+    # https://www.netacad.com/resources/lab-downloads and add it to the
+    # store with the command it prints. One-time, per machine.
+    cisco-packet-tracer_9
+
     xonotic
 
     pnpm
