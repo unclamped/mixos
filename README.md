@@ -33,7 +33,7 @@ a module in this repo.
 │   ├── turing/                     # desktop: default.nix, disko.nix, hardware.nix
 │   └── cerf/                       # laptop: + boot.nix, pentest.nix
 ├── modules/                        # SYSTEM modules, shared unless noted
-│   ├── core/                       # boot, impermanence, networking, users, fhs (nix-ld)
+│   ├── core/                       # boot, impermanence, networking, users, fhs (nix-ld; cerf only)
 │   ├── services/                   # pipewire, docker, syncthing
 │   ├── desktop/                    # hyprland, sddm, plymouth, power-menu
 │   ├── hardware/                   # nvidia, fido2, power-saving, laptop-keys, intel-gen8-kitty

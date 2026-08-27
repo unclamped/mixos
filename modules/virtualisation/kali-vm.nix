@@ -48,8 +48,25 @@ let
   overlay  = "${baseDir}/${cfg.name}-overlay.qcow2";
   nvram    = "${baseDir}/${cfg.name}-vars.fd";
 
-  domainXml = pkgs.writeText "${cfg.name}-domain.xml" ''
-    <domain type='kvm'>
+  # ── Two domain flavours, because KVM may not be available ────────────────
+  #
+  # `virsh define` of a type='kvm' domain is rejected outright when the
+  # emulator has no KVM support:
+  #     unsupported configuration: Emulator '.../qemu-system-x86_64'
+  #     does not support virt type 'kvm'
+  # and, more confusingly, when the machine type is the alias `q35` libvirt
+  # cannot canonicalise it without KVM capabilities, so the failure surfaces
+  # instead as the misleading
+  #     operation failed: Unable to find 'efi' firmware that is compatible
+  #     with the current configuration
+  # even though the firmware descriptors are perfectly fine. Both were
+  # observed on cerf; see the KVM check in the setup script below for the
+  # actual cause and the fix.
+  #
+  # So: build both, and let the script pick at runtime. TCG needs a different
+  # CPU model too — host-passthrough is meaningless without hardware virt.
+  domainXmlFor = accel: pkgs.writeText "${cfg.name}-domain-${accel}.xml" ''
+    <domain type='${accel}'>
       <name>${cfg.name}</name>
       <title>Kali Linux</title>
       <memory unit='MiB'>${toString cfg.memoryMiB}</memory>
@@ -69,9 +86,15 @@ let
         <apic/>
         <vmport state='off'/>
       </features>
-      <!-- host-passthrough so the guest sees AES-NI etc. rather than a
-           lowest-common-denominator CPU; this VM never migrates anywhere. -->
-      <cpu mode='host-passthrough' check='none' migratable='off'/>
+      ${if accel == "kvm" then ''
+        <!-- host-passthrough so the guest sees AES-NI etc. rather than a
+             lowest-common-denominator CPU; this VM never migrates anywhere. -->
+        <cpu mode='host-passthrough' check='none' migratable='off'/>
+      '' else ''
+        <!-- TCG: there is no host CPU to pass through. "maximum" gives the
+             guest every feature this QEMU can emulate. -->
+        <cpu mode='maximum'/>
+      ''}
       <clock offset='utc'>
         <timer name='rtc' tickpolicy='catchup'/>
         <timer name='pit' tickpolicy='delay'/>
@@ -197,11 +220,51 @@ let
 
       chown -R ${username}:users "${baseDir}"
 
-      # ── 4. define (or redefine) the domain from this config ────────────────
+      # ── 4. the libvirt NAT network the domain's NIC attaches to ────────────
+      # NixOS defines `default` but leaves it inactive and non-autostarting, so
+      # `virsh start kali` would fail with "Network not found / not active".
+      virsh net-autostart default >/dev/null 2>&1 || true
+      virsh net-info default 2>/dev/null | grep -q 'Active:.*yes' || \
+        virsh net-start default >/dev/null 2>&1 || true
+
+      # ── 5. define (or redefine) the domain from this config ────────────────
       # `virsh define` is idempotent and overwrites an existing definition, so
       # editing modules/virtualisation/kali-vm.nix and rebuilding is all it
       # takes to change the VM. It does NOT touch a running guest.
-      virsh define ${domainXml}
+      #
+      # Which flavour depends on whether this machine can actually do hardware
+      # virtualisation right now. On the EliteBook it could not, because
+      # Intel VT-x ships DISABLED in HP's firmware: /proc/cpuinfo had no `vmx`
+      # flag at all and /dev/kvm did not exist. That is a BIOS setting, not
+      # something the OS can turn on:
+      #     F10 at boot -> Security -> System Security
+      #                 -> Virtualization Technology (VTx)   = Enable
+      #                 -> (VTd too, if you ever want PCI passthrough)
+      # Once that is on, the next boot re-runs this service and silently
+      # upgrades the definition to KVM.
+      if [ -e /dev/kvm ]; then
+        virsh define ${domainXmlFor "kvm"}
+      else
+        cat >&2 <<'WARN'
+
+        ############################################################
+        #  KVM IS NOT AVAILABLE — the Kali guest will run under TCG #
+        #  emulation, which on this CPU is unusably slow.           #
+        #                                                           #
+        #  /dev/kvm is missing. Check for hardware virtualisation:  #
+        #      grep -c vmx /proc/cpuinfo     # 0 means it is off    #
+        #                                                           #
+        #  Enable it in firmware (HP EliteBook: F10 at boot):       #
+        #      Security -> System Security                          #
+        #              -> Virtualization Technology (VTx) = Enable  #
+        #                                                           #
+        #  Then reboot. This service picks KVM up automatically.    #
+        ############################################################
+
+WARN
+        virsh define ${domainXmlFor "qemu"}
+      fi
+
       ${lib.optionalString cfg.autostart "virsh autostart ${cfg.name}"}
       ${lib.optionalString (!cfg.autostart) "virsh autostart --disable ${cfg.name} || true"}
     '';
@@ -262,7 +325,9 @@ in
       (pkgs.writeShellScriptBin "kali" ''
         set -eu
         case "''${1:-start}" in
-          start)   virsh --connect qemu:///system start ${cfg.name} 2>/dev/null || true
+          start)   [ -e /dev/kvm ] || echo "warning: no /dev/kvm — running under TCG emulation. Enable VT-x in the BIOS (F10 -> Security -> System Security)." >&2
+                   virsh --connect qemu:///system net-start default >/dev/null 2>&1 || true
+                   virsh --connect qemu:///system start ${cfg.name} 2>/dev/null || true
                    exec virt-viewer --connect qemu:///system --attach ${cfg.name} ;;
           stop)    exec virsh --connect qemu:///system shutdown ${cfg.name} ;;
           kill)    exec virsh --connect qemu:///system destroy ${cfg.name} ;;

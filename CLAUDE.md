@@ -82,7 +82,7 @@ recreate it.
 | `hosts/<host>/disko.nix` | Disk layout |
 | `hosts/<host>/hardware.nix` | Generated hardware config |
 | `hosts/cerf/pentest.nix` | The native (non-VM) security toolkit |
-| `modules/core/` | boot, impermanence, networking, users, `fhs.nix` (nix-ld + FHS shell) |
+| `modules/core/` | boot, impermanence, networking, users, `fhs.nix` (nix-ld + FHS shell, **cerf only**) |
 | `modules/desktop/` | Hyprland enablement, SDDM, plymouth, `power-menu.nix` |
 | `modules/hardware/` | nvidia, fido2, power-saving, `laptop-keys.nix`, `intel-gen8-kitty.nix` |
 | `modules/services/` | pipewire, docker, `syncthing.nix` |

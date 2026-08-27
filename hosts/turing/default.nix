@@ -36,8 +36,10 @@
     # FIDO2 / U2F hardware tokens
     ../../modules/hardware/fido2.nix
 
-    # Run ordinary non-Nix binaries (nix-ld + an FHS shell + patchelf tooling).
-    ../../modules/core/fhs.nix
+    # NOTE: modules/core/fhs.nix (nix-ld + the FHS shell) is deliberately NOT
+    # imported here. It is a cerf thing — that machine is where prebuilt,
+    # non-Nix binaries actually get run. Import it if you ever need the same
+    # on the desktop.
 
     # for my Lemokey Keychron keeb
     # ../../modules/hardware/qmk.nix
