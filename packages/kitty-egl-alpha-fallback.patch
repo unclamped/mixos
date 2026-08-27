@@ -1,0 +1,37 @@
+--- a/glfw/egl_context.c	2026-08-26 23:11:37.933895452 -0300
++++ b/glfw/egl_context.c	2026-08-26 23:11:37.948751372 -0300
+@@ -110,7 +110,8 @@
+     if (desired->redBits > 0) ATTR(EGL_RED_SIZE, desired->redBits);
+     if (desired->greenBits > 0) ATTR(EGL_GREEN_SIZE, desired->greenBits);
+     if (desired->blueBits > 0) ATTR(EGL_BLUE_SIZE, desired->blueBits);
+-    if (desired->alphaBits > 0) ATTR(EGL_ALPHA_SIZE, desired->alphaBits);
++    int alphaAttrIdx = -1;
++    if (desired->alphaBits > 0) { alphaAttrIdx = i; ATTR(EGL_ALPHA_SIZE, desired->alphaBits); }
+     ATTR(EGL_NONE, EGL_NONE);
+ #undef ATTR
+     if (!eglChooseConfig(_glfw.egl.display, attributes, configs, sizeof(configs)/sizeof(configs[0]), &nativeCount)) {
+@@ -118,6 +119,24 @@
+         return false;
+     }
+ 
++    if (!nativeCount && alphaAttrIdx >= 0)
++    {
++        // Some compositor/GPU combinations publish no EGLConfig with an
++        // alpha channel at all, so a client that unconditionally asks for
++        // one can never get a window. Hyprland on Intel Gen8 is such a
++        // case: that primary plane has no ARGB8888 scanout format, so the
++        // compositor advertises only opaque dmabuf formats and Mesa in
++        // turn exposes only alpha-free configs. Retry once without the
++        // alpha requirement rather than failing to create a window.
++        // EGL treats a requested size of 0 as "do not care", so zeroing
++        // the value in place is enough.
++        attributes[alphaAttrIdx + 1] = 0;
++        if (!eglChooseConfig(_glfw.egl.display, attributes, configs, sizeof(configs)/sizeof(configs[0]), &nativeCount)) {
++            _glfwInputError(GLFW_API_UNAVAILABLE, "EGL: eglChooseConfig failed");
++            return false;
++        }
++    }
++
+     if (!nativeCount)
+     {
+         _glfwInputError(GLFW_API_UNAVAILABLE, "EGL: No EGLConfigs returned");

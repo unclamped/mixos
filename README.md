@@ -13,25 +13,38 @@ A modular, reproducible NixOS configuration with Hyprland, impermanence, and ful
 - 🔐 **ragenix**: Age-based secrets management
 - 📦 **Modular structure**: Each component is a separate module
 
+## Hosts
+
+| Host | Machine | Notes |
+|------|---------|-------|
+| `turing` | ASUS desktop, NVIDIA GTX 1660 SUPER | three monitors, gaming, VR, music, reverse engineering |
+| `cerf` | HP EliteBook 840 G2 (i5-5300U, HD 5500) | CCNAv7 / cybersec laptop, dual-boots Windows |
+
+Both share almost everything. Where they differ, the shared module takes an
+**option** and the host sets it — there are deliberately no per-host copies of
+a module in this repo.
+
 ## Structure
 
 ```
 .
-├── flake.nix           # Main flake configuration
+├── flake.nix                       # inputs, both nixosConfigurations, commonModules, hmFor
 ├── hosts/
-│   └── turing/         # Host-specific config
-│       ├── default.nix
-│       ├── disko.nix   # Disk layout
-│       └── hardware.nix
-├── modules/
-│   ├── core/           # Core system modules
-│   ├── services/       # System services
-│   ├── desktop/        # Desktop environment
-│   └── hardware/       # Hardware-specific
-├── home/               # Home Manager configuration
-│   ├── default.nix
-│   └── modules/        # User application configs
-└── secrets/            # Encrypted secrets
+│   ├── turing/                     # desktop: default.nix, disko.nix, hardware.nix
+│   └── cerf/                       # laptop: + boot.nix, pentest.nix
+├── modules/                        # SYSTEM modules, shared unless noted
+│   ├── core/                       # boot, impermanence, networking, users, fhs (nix-ld)
+│   ├── services/                   # pipewire, docker, syncthing
+│   ├── desktop/                    # hyprland, sddm, plymouth, power-menu
+│   ├── hardware/                   # nvidia, fido2, power-saving, laptop-keys, intel-gen8-kitty
+│   └── virtualisation/             # libvirt + the declarative Kali guest
+├── home/                           # HOME MANAGER
+│   ├── default.nix                 # the shared base, imported by both hosts
+│   ├── hosts/{turing,cerf}/        # per-host profile + that host's Hyprlain settings
+│   └── modules/                    # zsh, kitty, browsers, waybar, rofi, vicinae, neovim,
+│       └── desktop/hyprlain/       #   ...and the whole Hyprlain session, parameterised
+├── packages/                       # ida-pro, local patches
+└── secrets/                        # ragenix-encrypted
 ```
 
 ## Local-only dependencies
@@ -46,13 +59,21 @@ Two flake inputs point at content that isn't in this repo:
     --override-input ida-src path:/absolute/path/to/your/ida
   ```
 
-  If you don't have IDA Pro, you can drop `pkgs.ida-pro` from `hosts/turing/default.nix`'s package list and the `ida-src` input/overlay from `flake.nix` entirely.
+  Both hosts install it now, so both need the directory. To copy it to the other machine:
+
+  ```bash
+  rsync -a --delete ~/mixos/ida/ cerf:/home/maru/mixos/ida/   # ~1.1 GiB
+  rsync -a ~/.idapro/ cerf:/home/maru/.idapro/                # licence + settings
+  ```
+
+  If you don't have IDA Pro, drop `ida-pro` from the `home.packages` list in
+  `home/hosts/*/default.nix` and the `ida-src` input / `idaOverlay` from `flake.nix`.
 
 ## Quick Commands
 
 ```bash
 # Rebuild system
-sudo nixos-rebuild switch --flake ~/.dotfiles#turing
+sudo nixos-rebuild switch --flake ~/mixos#turing   # or #cerf
 
 # Update flake inputs
 nix flake update

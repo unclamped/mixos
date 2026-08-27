@@ -123,7 +123,7 @@ in
     '';
 
     # Modern Rust/LSP/completion/debug setup lives in Lua.
-    extraLuaConfig = ''
+    initLua = ''
       -- ── Treesitter highlighting (main-branch: use built-in starter) ──────
       vim.api.nvim_create_autocmd('FileType', {
         pattern = { 'rust', 'toml', 'nix' },

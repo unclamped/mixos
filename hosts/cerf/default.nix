@@ -13,6 +13,13 @@
 
     # Services
     ../../modules/services/docker.nix
+    # Audio. This was previously missing here and only present on turing —
+    # cerf got PipeWire by nixpkgs default rather than by declaration, which
+    # is exactly the kind of silent per-host drift the shared modules exist
+    # to prevent (and it is why the volume keys had nothing dependable to
+    # talk to).
+    ../../modules/services/pipewire.nix
+    ../../modules/services/syncthing.nix
 
     # Desktop
     ../../modules/desktop/hyprland.nix
@@ -20,13 +27,45 @@
     ../../modules/desktop/sddm-hyprlain.nix
     ../../modules/desktop/helium-policy.nix
     ../../modules/desktop/plymouth-lain.nix
+    # Power button opens the wlogout menu instead of cutting power.
+    ../../modules/desktop/power-menu.nix
 
     # FIDO2 / U2F hardware tokens — useful on a security-focused machine
     ../../modules/hardware/fido2.nix
 
     # Battery-life tuning (TLP, thermald, zram) — laptop only, not on turing
     ../../modules/hardware/power-saving.nix
+
+    # Makes the EliteBook function-key row work (brightness in particular).
+    ../../modules/hardware/laptop-keys.nix
+
+    # kitty on native Wayland on this Broadwell iGPU — see the file, it
+    # documents the whole EGL/dmabuf chain.
+    ../../modules/hardware/intel-gen8-kitty.nix
+
+    # Run ordinary non-Nix binaries (nix-ld + an FHS shell + patchelf tooling).
+    ../../modules/core/fhs.nix
+
+    # Virtualisation, and the declarative Kali guest.
+    ../../modules/virtualisation/libvirt.nix
+    ../../modules/virtualisation/kali-vm.nix
+
+    # The native security toolkit (the non-VM half of "all of Kali").
+    ./pentest.nix
   ];
+
+  # The Kali guest. `kali` from any terminal starts it and attaches a viewer;
+  # `kali reset` throws away everything written inside it.
+  kaliVm = {
+    enable = true;
+    memoryMiB = 6144;   # of 15 GiB total — leaves the host comfortable
+    vcpus = 4;
+    diskGiB = 80;
+  };
+
+  # Syncthing. Fill in cerf/turing device IDs once (see the module header) and
+  # both machines converge on their own from then on.
+  syncthing.thisDevice = "cerf";
 
   # Override the efiSysMountPoint specifically for this host's XBOOTLDR setup
   boot.loader.efi.efiSysMountPoint = lib.mkForce "/boot/efi";
@@ -40,8 +79,17 @@
   environment.variables.TZDIR = "/etc/zoneinfo";
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Console keymap
-  console.keyMap = "us";
+  # ── Keyboard layout ──────────────────────────────────────────────────────
+  # The built-in keyboard is a Latin-American unit, so the CONSOLE (which has
+  # exactly one keymap, and which you only ever type on with the built-in
+  # keyboard) uses la-latin1, and so does the SDDM greeter via the XKB
+  # equivalent, "latam".
+  #
+  # Inside the session it is per-device instead — internal keyboard latam,
+  # every external keyboard us/altgr-intl, both live at once. That cannot be
+  # expressed here; see home/hosts/cerf/hyprlain-laptop.nix.
+  console.keyMap = "la-latin1";
+  services.xserver.xkb.layout = "latam";
 
   # SSH server — key-only, maru only. Accepts the same id_ed25519 keypair
   # used to reach cerf from turing (home/cerf.nix's home.file declares the
@@ -220,7 +268,9 @@
     minicom
     openvpn
 
-    antigravity
+    # Renamed upstream: the old attribute `antigravity` now warns on every
+    # evaluation and points here.
+    antigravity-ide
     wireguard-tools
     gns3-gui
     gns3-server

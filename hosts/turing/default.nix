@@ -14,6 +14,7 @@
     # Services
     ../../modules/services/pipewire.nix
     ../../modules/services/docker.nix
+    ../../modules/services/syncthing.nix
 
     # Desktop
     ../../modules/desktop/hyprland.nix
@@ -21,6 +22,8 @@
     ../../modules/desktop/sddm-hyprlain.nix
     ../../modules/desktop/helium-policy.nix
     ../../modules/desktop/plymouth-lain.nix
+    # Power button opens the wlogout menu instead of cutting power.
+    ../../modules/desktop/power-menu.nix
 
     # ENVIDIA
     ../../modules/hardware/nvidia.nix
@@ -33,12 +36,18 @@
     # FIDO2 / U2F hardware tokens
     ../../modules/hardware/fido2.nix
 
+    # Run ordinary non-Nix binaries (nix-ld + an FHS shell + patchelf tooling).
+    ../../modules/core/fhs.nix
+
     # for my Lemokey Keychron keeb
     # ../../modules/hardware/qmk.nix
   ];
 
-  # Hostname
-  networking.hostName = "nixos";
+  # Hostname. This said "nixos" for a long time, which is why every build
+  # output was named nixos-system-nixos-* while cerf's was nixos-system-cerf-*,
+  # and why `hostname` disagreed with the flake attribute. It is the host, so
+  # it is called turing.
+  networking.hostName = "turing";
 
   # Timezone and locale
   time.timeZone = "America/Argentina/Cordoba";
@@ -76,6 +85,10 @@
 
   # Dolphin: removable media / automount support
   services.udisks2.enable = true;
+
+  # Syncthing. Fill in the device IDs once (see the module header) and the two
+  # machines converge on their own from then on.
+  syncthing.thisDevice = "turing";
 
   security.polkit.enable = true;
 
@@ -163,7 +176,9 @@
     variety
 
     claude-code
-    antigravity
+    # Renamed upstream: the old attribute `antigravity` now warns on every
+    # evaluation and points here.
+    antigravity-ide
 
     ferdium
     senpai

@@ -116,13 +116,60 @@
       pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
 
       username = "maru";
+
+      # IDA Pro — adds pkgs.ida-pro from the local package. ida-src is a
+      # path: flake input pointing at the gitignored ida/ directory; Nix
+      # hashes it into flake.lock so pure eval mode is happy.
+      #
+      # This is shared by both hosts now. Note what that means for cerf: the
+      # input is only FORCED when something actually references pkgs.ida-pro,
+      # so a machine without /home/maru/mixos/ida can still evaluate the flake
+      # right up until it tries to build a config that installs IDA. cerf does
+      # install it, so cerf needs the directory copied over:
+      #     rsync -a --delete ~/mixos/ida/ cerf:/home/maru/mixos/ida/
+      #     rsync -a ~/.idapro/ cerf:/home/maru/.idapro/     # licence + config
+      idaOverlay = { ... }: {
+        nixpkgs.overlays = [
+          (self: super: {
+            ida-pro = super.callPackage ./packages/ida-pro.nix {
+              idaSrc = inputs.ida-src;
+            };
+          })
+        ];
+      };
+
+      # Everything both hosts always want, in one list so a new host cannot
+      # accidentally be assembled with half of it.
+      commonModules = [
+        disko.nixosModules.disko
+        impermanence.nixosModules.impermanence
+        ragenix.nixosModules.default
+        stylix.nixosModules.stylix
+        home-manager.nixosModules.home-manager
+        idaOverlay
+      ];
+
+      # Identical Home Manager wiring for every host; only the profile differs.
+      hmFor = profile: {
+        home-manager = {
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          # Back up (instead of refusing to clobber) pre-existing on-disk
+          # files that HM now wants to manage — e.g. Equibop writes
+          # ~/.config/equibop/settings/quickCss.css at runtime before
+          # nixcord's quickCss takes it over.
+          backupFileExtension = "hm-bak";
+          extraSpecialArgs = { inherit inputs username; };
+          users.${username} = import profile;
+        };
+      };
     in
     {
       nixosConfigurations.turing = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit inputs username; };
 
-        modules = [
+        modules = commonModules ++ [
           # Add the cachyos kernel overlay so `pkgs.cachyosKernels` is available
           ({ pkgs, ... }:
             {
@@ -131,45 +178,8 @@
             }
           )
 
-          # IDA Pro — adds pkgs.ida-pro from the local package.
-          # ida-src is a path: flake input pointing to the gitignored ida/
-          # directory; Nix hashes it into flake.lock so pure eval mode is happy.
-          ({ ... }:
-            {
-              nixpkgs.overlays = [
-                (self: super: {
-                  ida-pro = super.callPackage ./packages/ida-pro.nix {
-                    idaSrc = inputs.ida-src;
-                  };
-                })
-              ];
-            }
-          )
-
-          # Core inputs
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ragenix.nixosModules.default
-          stylix.nixosModules.stylix
-
-          # Host configuration
           ./hosts/turing
-
-          # Home Manager
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              # Back up (instead of refusing to clobber) pre-existing on-disk
-              # files that HM now wants to manage — e.g. Equibop writes
-              # ~/.config/equibop/settings/quickCss.css at runtime before
-              # nixcord's quickCss takes it over.
-              backupFileExtension = "hm-bak";
-              extraSpecialArgs = { inherit inputs username; };
-              users.${username} = import ./home;
-            };
-          }
+          (hmFor ./home/hosts/turing)
         ];
       };
 
@@ -177,27 +187,9 @@
         inherit system;
         specialArgs = { inherit inputs username; };
 
-        modules = [
-          # Core inputs
-          disko.nixosModules.disko
-          impermanence.nixosModules.impermanence
-          ragenix.nixosModules.default
-          stylix.nixosModules.stylix
-
-          # Host configuration
+        modules = commonModules ++ [
           ./hosts/cerf
-
-          # Home Manager
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              backupFileExtension = "hm-bak";
-              extraSpecialArgs = { inherit inputs username; };
-              users.${username} = import ./home/cerf.nix;
-            };
-          }
+          (hmFor ./home/hosts/cerf)
         ];
       };
 

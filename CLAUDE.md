@@ -5,11 +5,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Common Commands
 
 ```bash
-# Rebuild and switch to new configuration
-sudo nixos-rebuild switch --flake ~/mixos#turing
+# Rebuild and switch to new configuration (pick the host you are ON)
+sudo nixos-rebuild switch --flake ~/mixos#turing   # the desktop
+sudo nixos-rebuild switch --flake ~/mixos#cerf     # the EliteBook 840 G2
 
 # Dry-run build (check for errors without switching)
 sudo nixos-rebuild dry-build --flake ~/mixos#turing
+
+# Evaluate a host without building anything (fastest syntax/option check)
+nix eval .#nixosConfigurations.cerf.config.system.build.toplevel.drvPath
 
 # Update all flake inputs
 nix flake update
@@ -42,34 +46,71 @@ Do this automatically at the end of every task — do not wait to be asked.
 
 ## Architecture
 
-This is a single-host NixOS flake for the host `turing`. The username is `maru` and is threaded through the entire config via `specialArgs`.
+A **two-host** NixOS flake: `turing` (desktop — NVIDIA, three monitors, gaming/VR)
+and `cerf` (HP EliteBook 840 G2 — CCNAv7 / cybersec laptop). The username is
+`maru` and is threaded through the entire config via `specialArgs`.
+
+**The cardinal rule of this repo: never fork a module per host.** If two hosts
+need to differ, the shared module grows an *option* and each host sets it. The
+repo previously had `home/default.nix` (turing) beside `home/cerf.nix`, and
+`hyprlain.nix` beside `hyprlain-laptop.nix` — near-identical copies that had
+already silently drifted (different stateVersion, one had the D-Bus portal fix
+and the other didn't, a DPMS bug fixed in neither). That layout is gone; don't
+recreate it.
 
 **Flake inputs of note:**
 - `nixpkgs` → `nixos-unstable`
 - `home-manager` — user environment, follows nixpkgs
 - `impermanence` — root-wipe-on-boot setup
 - `disko` — declarative disk partitioning (LUKS2 → BTRFS)
-- `stylix` — base16 theming from a single wallpaper/scheme
+- `stylix` — base16 theming (the Lain "Wired" palette, `hosts/*/lain-base16.yaml`)
 - `ragenix` — age-encrypted secrets
 - `hyprland` — Wayland compositor (pinned to its own upstream, not nixpkgs)
-- `nix-cachyos-kernel` — provides `pkgs.cachyosKernels`; loaded via overlay
+- `nix-cachyos-kernel` — provides `pkgs.cachyosKernels`; turing only
 - `vicinae` — do **not** add `inputs.nixpkgs.follows` to it (avoids cachix cache misses)
 - `nixcord` — Vencord/Equicord Discord client via HM module
+- `ida-src` — an absolute `path:` input to the gitignored `ida/` directory. It is
+  only *forced* when something references `pkgs.ida-pro`, so a machine without it
+  can still evaluate the flake; both hosts install IDA, so both need the directory.
 
 ### Module layout
 
 | Path | Purpose |
 |------|---------|
-| `flake.nix` | Inputs, outputs, `nixosConfigurations.turing` |
-| `hosts/turing/default.nix` | Host-level config: hostname, locale, Stylix theme, kernel, system packages |
-| `hosts/turing/disko.nix` | Disk layout: GPT → ESP + LUKS2 → BTRFS subvolumes |
-| `hosts/turing/hardware.nix` | Generated hardware config |
-| `modules/core/` | boot, impermanence, networking, users |
-| `modules/desktop/hyprland.nix` | System-level Hyprland enablement |
-| `modules/hardware/nvidia.nix` | NVIDIA proprietary driver + Wayland env vars |
-| `modules/services/pipewire.nix` | Audio |
-| `home/default.nix` | Home Manager root: user packages, git, nixcord |
-| `home/modules/` | Per-app HM configs: zsh, kitty, librewolf, hyprland (user), waybar, rofi, vicinae, neovim |
+| `flake.nix` | Inputs, outputs, `nixosConfigurations.{turing,cerf}`, `commonModules`, `hmFor` |
+| `hosts/<host>/default.nix` | Host-level config: hostname, locale, Stylix, kernel, packages |
+| `hosts/<host>/disko.nix` | Disk layout |
+| `hosts/<host>/hardware.nix` | Generated hardware config |
+| `hosts/cerf/pentest.nix` | The native (non-VM) security toolkit |
+| `modules/core/` | boot, impermanence, networking, users, `fhs.nix` (nix-ld + FHS shell) |
+| `modules/desktop/` | Hyprland enablement, SDDM, plymouth, `power-menu.nix` |
+| `modules/hardware/` | nvidia, fido2, power-saving, `laptop-keys.nix`, `intel-gen8-kitty.nix` |
+| `modules/services/` | pipewire, docker, `syncthing.nix` |
+| `modules/virtualisation/` | `libvirt.nix`, `kali-vm.nix` (declarative Kali guest) |
+| `home/default.nix` | **Shared** HM base — imported by both host profiles |
+| `home/hosts/<host>/` | Per-host HM profile + that host's Hyprlain settings |
+| `home/modules/desktop/hyprlain/` | The Hyprlain session, as ONE parameterised module |
+| `home/modules/` | Per-app HM configs: zsh, kitty, browsers, waybar, rofi, vicinae, neovim |
+
+### The Hyprlain session
+
+`home/modules/desktop/hyprlain/default.nix` defines an `options.hyprlain` tree
+and generates every session file from it: `hyprland.lua`, the session-scoped
+kitty/dunst/hypridle/hyprlock configs, the waybar config + stylesheet, and the
+wlogout layout + stylesheet. Hosts set options in
+`home/hosts/<host>/hyprlain-*.nix` and add nothing else.
+
+**Two things about this Hyprland that bite repeatedly:**
+
+1. It runs a **Lua** config, so `hyprctl dispatch <x>` evaluates `<x>` as Lua
+   (`return hl.dispatch(<x>)`), *not* as a native dispatcher. `hyprctl dispatch
+   dpms on` is a syntax error, not a dispatch. Pass Lua: `hyprctl dispatch
+   "hl.dsp.dpms({on=true})"`.
+2. Dispatchers validate their argument as a **table**. `hl.dsp.dpms('on')`
+   returns `ok` and does nothing. Always pass `{...}`.
+
+Validate generated Lua with `luac -p` on the rendered file, or
+`Hyprland --verify-config`.
 
 ### Impermanence model
 
@@ -83,7 +124,13 @@ The user's home (`/home/maru`) is bind-mounted **wholesale** from `/persist/home
 
 ### Theming
 
-Stylix is configured in `hosts/turing/default.nix`. It applies a base16 scheme (`gruvbox-dark`) system-wide. Both `stylix.image` and `stylix.base16Scheme` are set — `base16Scheme` takes precedence for colors; the image is still used as the wallpaper source where applicable.
+Stylix is configured per host (`hosts/<host>/default.nix`) and both hosts use
+the same base16 scheme — the Lain "Wired" palette in `hosts/<host>/lain-base16.yaml`
+— so the two machines read as one system. Both `stylix.image` and
+`stylix.base16Scheme` are set; `base16Scheme` takes precedence for colors, and
+the image is still used as the wallpaper source where applicable. Apps with
+bespoke Hyprlain theming (spicetify, vicinae, nixcord, GTK/Qt) have their Stylix
+targets disabled so the hand-written theme wins.
 
 ### Secrets
 
