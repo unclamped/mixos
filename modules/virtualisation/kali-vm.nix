@@ -227,11 +227,7 @@ let
       virsh net-info default 2>/dev/null | grep -q 'Active:.*yes' || \
         virsh net-start default >/dev/null 2>&1 || true
 
-      # ── 5. define (or redefine) the domain from this config ────────────────
-      # `virsh define` is idempotent and overwrites an existing definition, so
-      # editing modules/virtualisation/kali-vm.nix and rebuilding is all it
-      # takes to change the VM. It does NOT touch a running guest.
-      #
+      # ── 5. pick the domain flavour ──────────────────────────────────────────
       # Which flavour depends on whether this machine can actually do hardware
       # virtualisation right now. On the EliteBook it could not, because
       # Intel VT-x ships DISABLED in HP's firmware: /proc/cpuinfo had no `vmx`
@@ -243,7 +239,7 @@ let
       # Once that is on, the next boot re-runs this service and silently
       # upgrades the definition to KVM.
       if [ -e /dev/kvm ]; then
-        virsh define ${domainXmlFor "kvm"}
+        domainXml=${domainXmlFor "kvm"}
       else
         cat >&2 <<'WARN'
 
@@ -262,7 +258,27 @@ let
         ############################################################
 
 WARN
-        virsh define ${domainXmlFor "qemu"}
+        domainXml=${domainXmlFor "qemu"}
+      fi
+
+      # ── 6. define (or redefine) the domain from this config ────────────────
+      # `virsh define` fails if the domain already exists, so make the
+      # declaration idempotent by undefining first when needed (unless it's
+      # currently running, in which case the live definition is left alone).
+      if virsh dominfo ${cfg.name} >/dev/null 2>&1; then
+        state="$(virsh domstate ${cfg.name} 2>/dev/null || true)"
+        case "$state" in
+          running|paused|pmsuspended|in\ shutdown)
+            echo "kali-vm: domain ${cfg.name} is active ($state); keeping current definition."
+            ;;
+          *)
+            virsh undefine ${cfg.name} --nvram >/dev/null 2>&1 || virsh undefine ${cfg.name}
+            rm -f "${nvram}"
+            virsh define "$domainXml"
+            ;;
+        esac
+      else
+        virsh define "$domainXml"
       fi
 
       ${lib.optionalString cfg.autostart "virsh autostart ${cfg.name}"}

@@ -39,10 +39,6 @@
     # Makes the EliteBook function-key row work (brightness in particular).
     ../../modules/hardware/laptop-keys.nix
 
-    # kitty on native Wayland on this Broadwell iGPU — see the file, it
-    # documents the whole EGL/dmabuf chain.
-    ../../modules/hardware/intel-gen8-kitty.nix
-
     # Run ordinary non-Nix binaries (nix-ld + an FHS shell + patchelf tooling).
     ../../modules/core/fhs.nix
 
