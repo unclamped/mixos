@@ -198,10 +198,23 @@ let
       chown -R ${username}:users "${baseDir}"
 
       # ── 4. define (or redefine) the domain from this config ────────────────
-      # `virsh define` is idempotent and overwrites an existing definition, so
-      # editing modules/virtualisation/kali-vm.nix and rebuilding is all it
-      # takes to change the VM. It does NOT touch a running guest.
-      virsh define ${domainXml}
+      # `virsh define` fails if the domain already exists, so make the
+      # declaration idempotent by undefining first when needed.
+      if virsh dominfo ${cfg.name} >/dev/null 2>&1; then
+        state="$(virsh domstate ${cfg.name} 2>/dev/null || true)"
+        case "$state" in
+          running|paused|pmsuspended|in\ shutdown)
+            echo "kali-vm: domain ${cfg.name} is active ($state); keeping current definition."
+            ;;
+          *)
+            virsh undefine ${cfg.name} --nvram >/dev/null 2>&1 || virsh undefine ${cfg.name}
+            rm -f "${nvram}"
+            virsh define ${domainXml}
+            ;;
+        esac
+      else
+        virsh define ${domainXml}
+      fi
       ${lib.optionalString cfg.autostart "virsh autostart ${cfg.name}"}
       ${lib.optionalString (!cfg.autostart) "virsh autostart --disable ${cfg.name} || true"}
     '';
