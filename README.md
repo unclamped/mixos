@@ -36,7 +36,7 @@ a module in this repo.
 │   ├── core/                       # boot, impermanence, networking, users, fhs (nix-ld; cerf only)
 │   ├── services/                   # pipewire, docker, syncthing
 │   ├── desktop/                    # hyprland, sddm, plymouth, power-menu
-│   ├── hardware/                   # nvidia, fido2, power-saving, laptop-keys, intel-gen8-kitty
+│   ├── hardware/                   # nvidia, fido2, power-saving, laptop-keys
 │   └── virtualisation/             # libvirt + the declarative Kali guest
 ├── home/                           # HOME MANAGER
 │   ├── default.nix                 # the shared base, imported by both hosts

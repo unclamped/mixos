@@ -16,6 +16,12 @@
     # desk's font size costs a visible number of columns.
     kitty.fontSize = "13.0";
 
+    # Keep kitty on Xwayland here too. This is a SEPARATE config from
+    # programs.kitty's (see home/hosts/cerf/default.nix for why), and SUPER+Q
+    # launches kitty with -c against this one, so the override has to be
+    # repeated here or SUPER+Q loses transparency same as the global kitty did.
+    kitty.extraSettings = "linux_display_server x11";
+
     # Battery machine: don't let it sit awake all night if it's left unplugged.
     idle.suspendTimeout = 900;
 
