@@ -220,7 +220,6 @@
     minicom
     openvpn
 
-    vscode
     antigravity
     wireguard-tools
     gns3-gui
