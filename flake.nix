@@ -138,6 +138,18 @@
         ];
       };
 
+      # cisco-packet-tracer_9 in the pinned nixpkgs only knows about 9.0.0.
+      # This overlay swaps in a patched copy (packages/cisco-packet-tracer-9.nix)
+      # that adds 9.0.1 support and defaults to it. Drop this once the fix
+      # lands upstream and the flake's nixpkgs input is bumped past it.
+      ciscoPacketTracerOverlay = { ... }: {
+        nixpkgs.overlays = [
+          (self: super: {
+            cisco-packet-tracer_9 = super.callPackage ./packages/cisco-packet-tracer-9.nix { };
+          })
+        ];
+      };
+
       # Everything both hosts always want, in one list so a new host cannot
       # accidentally be assembled with half of it.
       commonModules = [
@@ -147,6 +159,7 @@
         stylix.nixosModules.stylix
         home-manager.nixosModules.home-manager
         idaOverlay
+        ciscoPacketTracerOverlay
       ];
 
       # Identical Home Manager wiring for every host; only the profile differs.
