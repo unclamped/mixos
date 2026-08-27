@@ -219,6 +219,8 @@
     picocom # serial console access to real Cisco gear
     minicom
     openvpn
+
+    antigravity
     wireguard-tools
     gns3-gui
     gns3-server

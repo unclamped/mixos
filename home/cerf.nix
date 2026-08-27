@@ -35,7 +35,7 @@
   home = {
     username = username;
     homeDirectory = "/home/${username}";
-    stateVersion = "26.05";
+    stateVersion = "26.11";
 
     packages = with pkgs; [
       # Browsers
@@ -47,8 +47,8 @@
       # Networking / CCNAv7 / cybersec extras beyond the system package set
       # (modules/hardware/net tools are installed system-wide in
       # hosts/cerf/default.nix; these are user-facing/GUI or scripting tools)
-      python312
-      python312Packages.scapy
+      python314
+      python314Packages.scapy
       remmina # RDP/VNC/SSH client — useful for reaching lab VMs
       filezilla
 
@@ -63,7 +63,7 @@
 
     sessionVariables = {
       EDITOR = "nvim";
-      BROWSER = "librewolf";
+      BROWSER = "helium";
       TERMINAL = "kitty";
     };
   };
